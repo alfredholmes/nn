@@ -16,7 +16,7 @@ NN_Matrix::NN_Matrix(int _width, int _height)
 		}
 		m_data.push_back(column);
 	}
-	
+
 }
 
 
@@ -33,9 +33,9 @@ NN_Matrix::NN_Matrix(int _width, int _height, float default_value)
 		{
 			column.push_back(default_value);
 		}
-		data.push_back(column);
+		m_data.push_back(column);
 	}
-	
+
 }
 
 
@@ -55,14 +55,14 @@ NN_Matrix NN_Matrix::multiply(NN_Matrix const &a) const //needs optimisation
 		rows.push_back(a.getRow(y));
 	*/
 	//calculate the value for each element in new matrix
-	//not sure about optimisation for this 
+	//not sure about optimisation for this
 	for(int x = 0; x < width; x++)
 	{
 		std::vector<float> column = getColumn(x);
 		for(int y = 0; y < a.width; y++)
 		{
 
-			std::vector<float> row = a.getRow(y); //should be using cache 			
+			std::vector<float> row = a.getRow(y); //should be using cache
 			float total = 0;
 			for(int i = 0; i < a.width; i++)
 			{
@@ -93,4 +93,3 @@ std::vector<float> NN_Matrix::getRow(int const &r) const
 
 	return row;
 }
-

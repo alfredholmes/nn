@@ -12,7 +12,7 @@ class NN_Matrix
 public:
 	//Construct matrix with random values between 0 and 1
 	NN_Matrix(int _width, int _height);
-	
+
 	//Construct matrix with a defailt value of 0
 	NN_Matrix(int _width, int _height, float default_value);
 
@@ -34,6 +34,7 @@ public:
 	void addColumn(std::vector<float> column);
 
 	void setValue(float const &value, int const &x, int const &y) { m_data[x][y] = value; }
+
 private:
 	std::vector<std::vector<float>> m_data;
 	int width, height;

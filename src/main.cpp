@@ -8,10 +8,10 @@ int main()
 {
 	NN_FIO manager("testdata.nn");
 	NN test = manager.load();
-	
+
+
+	std::cout << test.getNLayers() << std::endl;
 	//manager.save(test);
 
 	return 0;
 }
-
-

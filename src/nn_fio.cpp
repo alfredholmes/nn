@@ -34,12 +34,12 @@ NN NN_FIO::load()
 
 	std::vector<float> data;
 	std::string file;
-	
+
 	std::stringstream ss;
 
 	while (std::getline(input, file))
 		ss << file;
-	
+
 
 	std::cout << file << std::endl;
 
@@ -48,13 +48,50 @@ NN NN_FIO::load()
 		data.push_back(temp);
 
 	int inputs = (int)data[0];
-	int output = (int)data[1];
+	int outputs = (int)data[1];
 	int hiddenlayers = (int)data[2];
 	int nodes = (int)data[3];
-	
 
+	std::vector<NN_Matrix> layers;
+	int offset = 3;
+	for(int i = 0; i < hiddenlayers; i++)
+	{
+		std::cout << "Creating layer " << i << std::endl;
+		if(i == 0)
+		{
+			NN_Matrix mat(inputs, nodes);
+			for(int y = 0; y < nodes; y++)
+			{
+				for(int x = 0; x < inputs; x++)
+					mat.setValue(data[offset + x + y * inputs], x, y);
+			}
+			layers.push_back(mat);
+		}else if(i == hiddenlayers - 1)
+		{
+			NN_Matrix(nodes, nodes);
+			NN_Matrix mat(nodes, nodes);
+			for(int y = 0; y < nodes; y++)
+			{
+				for(int x = 0; x < nodes; x++)
+					mat.setValue(data[offset + nodes*inputs + (i-1)*nodes * nodes + x + y * nodes], x, y);
+			}
+			layers.push_back(mat);
+		}else{
+			NN_Matrix(nodes, outputs);
+			NN_Matrix mat(nodes, outputs);
+			for(int y = 0; y < outputs; y++)
+			{
+				for(int x = 0; x < nodes; x++)
+					mat.setValue(data[offset + nodes*inputs + (i-1)*nodes * nodes + x + y * nodes], x, y);
+			}
+			layers.push_back(mat);
+		}
+	}
 
-	
+	 NN network(inputs, outputs, hiddenlayers, nodes);
+	 network.setLayers(layers);
+
+	 return network;
 
 
 
