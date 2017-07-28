@@ -1,8 +1,8 @@
 CC = g++
 
-FLAGS = -std=c++11 -Wall
+FLAGS = -std=c++11 -Wall -g
 
-FILES := main.cpp nn_matrix.cpp
+FILES := nn.cpp nn_matrix.cpp nn_fio.cpp main.cpp 
 
 OBJDIR = obj
 SRCDIR = src
