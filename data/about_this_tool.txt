@@ -1,0 +1,4 @@
+This is a tool for generating traning data from betfairs horse racing statistics available from http://data.betfair.com/
+Betfair do not allow the data to be distributed so must be obtained in order to be used
+
+The tool its self is incomplete at the moment as it doesn't handle certain races when the flag for the bet being won is 1, perhaps due to rule 4 refunds
