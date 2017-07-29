@@ -1,76 +1,67 @@
 #include "nn_matrix.h"
 
-NN_Matrix::NN_Matrix(int _width, int _height)
+NN_Matrix::NN_Matrix(int width, int height):
+	m_width(width), m_height(height)
 {
-	width = _width;
-	height = _height;
 
 	srand(time(NULL));
 
-	for(int x = 0; x < width; x++)
+	for(int y = 0; y < m_height; y++)
 	{
-		std::vector<float> column;
-		for(int y = 0; y < height; y++)
+		std::vector<float> row;
+		for(int x = 0; x < m_width; x++)
 		{
-			column.push_back((float)rand() / (float)RAND_MAX);
+			row.push_back((float)rand() / (float)RAND_MAX);
 		}
-		m_data.push_back(column);
+		m_data.push_back(row);
 	}
 
 }
 
 
-NN_Matrix::NN_Matrix(int _width, int _height, float default_value)
+NN_Matrix::NN_Matrix(int width, int height, float default_value):
+	m_width(width), m_height(height)
 {
-	width = _width;
-	height = _height;
+
 	srand(time(NULL));
 
-	for(int x = 0; x < width; x++)
+	for(int y = 0; y < m_height; y++)
 	{
-		std::vector<float> column;
-		for(int y = 0; y < height; y++)
+		std::vector<float> row;
+		for(int x = 0; x < m_width; x++)
 		{
-			column.push_back(default_value);
+			row.push_back(default_value);
 		}
-		m_data.push_back(column);
+		m_data.push_back(row);
 	}
 
 }
 
 
-NN_Matrix NN_Matrix::multiply(NN_Matrix const &a) const //needs optimisation
+NN_Matrix NN_Matrix::multiply(NN_Matrix const &a) const
 {
-	if(a.width != height)
+	if(a.m_width != m_height)
 	{
-		std::cout << "ERROR MATRIX SIZE MISMATCH WITH SIZES: (" << a.width << ", " << height << ")" << std::endl;
-		return NN_Matrix(0, 0); //do some logging
+		std::cout << "ERROR MATRIX SIZE MISMATCH WITH SIZES: (" << a.m_width << ", " << m_height << ")" << std::endl;
+		return NN_Matrix(0, 0);
 	}
-	//create matrix for return
-	NN_Matrix matrix(width, a.width, 0);
+	NN_Matrix matrix(m_width, a.m_height, 0);
 
-	//cache rows - there was an odd error here with some really large numbers which
-	// is removed when the cache is not used - not sure.
-	/*std::vector<std::vector<float>> rows;
+	std::vector<std::vector<float>> row_cache;
 
-	for(int y = 0; y < a.width; y++)
-		rows.push_back(a.getRow(y));
-	*/
-	//calculate the value for each element in new matrix
-	//not sure about optimisation for this
-	for(int x = 0; x < width; x++)
+
+	for(int y = 0; y < a.m_height; y++)
 	{
-		std::vector<float> column = getColumn(x);
-		for(int y = 0; y < a.width; y++)
+		for(int x = 0; x < m_width; x++)
 		{
-
-			std::vector<float> row = a.getRow(y); //should be using cache
 			float total = 0;
-			for(int i = 0; i < a.width; i++)
+			std::vector<float> row = a.getRow(y);
+			std::vector<float> column = getColumn(x);
+			for(unsigned i = 0; i < row.size(); i++)
 			{
-				total += column[i] * row[i];
+				total += row[i] * column[i];
 			}
-			matrix.m_data[x][y] = total;
+			matrix.m_data[y][x] = total;
 		}
 	}
 
@@ -80,24 +71,29 @@ NN_Matrix NN_Matrix::multiply(NN_Matrix const &a) const //needs optimisation
 
 std::vector<float> NN_Matrix::getColumn(int const &c) const
 {
-	return m_data[c];
-}
-
-std::vector<float> NN_Matrix::getRow(int const &r) const
-{
-	std::vector<float> row;
-	for(int y = 0; y < height; y++)
+	std::vector<float> column;
+	for(int y = 0; y < m_height; y++)
 	{
-		row.push_back(m_data[r][y]);
+		column.push_back(m_data[y][c]);
 	}
-
-
-
-	return row;
+	return column;
 }
+
+
 
 void NN_Matrix::setColumn(int id, std::vector<float> column)
 {
-	m_data[id] = column;
-	height = column.size();
+	if(column.size() > (unsigned)m_height)
+		std::cout << "WARN: COLUMN SIZE MISMATCH, EXTRA DATA WILL BE IGNORED";
+	if(column.size() < (unsigned)m_height)
+	{
+		std::cout << "WARN: COLUMN SIZE MISMATCH, EXTRA NULL DATA WILL BE ADDDED";
+		int diff = m_height - column.size();
+		for(int i = 0; i < diff; i++)
+			column.push_back(0);
+	}
+	for(int y = 0; y < m_height; y++)
+	{
+		m_data[y][id] = column[y];
+	}
 }

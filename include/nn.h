@@ -22,14 +22,15 @@ public:
 
 	NN_Matrix getLayer(int id) { return m_layers[id]; }
 
-	void setLayers(std::vector<NN_Matrix> layers) { m_layers = layers; } //do some error checking or automatically update int metadata
+	void setLayers(std::vector<NN_Matrix> layers) { m_layers = layers; }
 	void selLayer(int layer, NN_Matrix data) { m_layers[layer] = data; }
 
+	void dump();
 
 private:
 	static inline float activation(float x);
 	static inline std::vector<float> batchActivation(std::vector<float> inoput);
 	std::vector<NN_Matrix> m_layers;
-	int m_inputs, m_outputs, m_hiddenlayers, m_nodes;
+	int m_inputs, m_outputs, m_hidden_layers, m_nodes;
 
 };
