@@ -6,37 +6,32 @@ void print_matrix(NN_Matrix mat);
 
 int main()
 {
-	NN_FIO manager("testdata.nn");
-	NN test(1, 1, 2, 5);
+
+	//Create new NN
+
+	NN square(1, 1, 2, 10);
+
+	std::cout << 1 / square.calculate({10})[0] << std::endl;
+
+	for(int i = 0; i < 1000; i++)
+	{
+		//std::cout << "Iteration " << i << std::endl;
+		float input = rand() % 1000;
+		float output = pow(input, .5);
+		//std::cout << input << " " << output << std::endl;
+		
+		square.backpropergation({1 / input}, {1 / output});
+	}
+	
+
+	
+	std::cout << 1 / square.calculate({500})[0] << std::endl;
+
+	square.dump();
 
 
-	manager.save(test);
-
-
-	std::vector<float> out = test.calculate({5});
-
-	for(unsigned i = 0; i < out.size(); i++)
-		std::cout << out[i] << " " ;
-
-	std::cout << std::endl;
-
-	NN loaded = manager.load();
-	//NN loaded = test;
-	out = loaded.calculate({5});
-
-	for(unsigned i = 0; i < out.size(); i++)
-		std::cout << out[i] << " ";
-
-	out = loaded.calculate({5});
-
-	for(unsigned i = 0; i < out.size(); i++)
-		std::cout << out[i] << " ";
-
-	std::cout << std::endl;
-
-
-	test.dump();
-	loaded.dump();
+//	test.dump();
+//	loaded.dump();
 
 
 

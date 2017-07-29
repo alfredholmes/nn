@@ -41,7 +41,7 @@ NN NN_FIO::load()
 		ss << file;
 
 
-	//std::cout << file << std::endl;
+
 
 	float temp;
 	while(ss >> temp)
@@ -61,34 +61,33 @@ NN NN_FIO::load()
 		for(int y = 0; y < inputs; y++)
 		{
 			for(int x = 0; x < outputs; x++)
-				mat.setValue(data[offset + x + y * inputs], x, y);
+				mat.setValue(x, y, data[offset + x + y * inputs]);
 		}
 
 		layers.push_back(mat);
 	}else{
 		for(int i = 0; i < hidden_layers; i++)
 		{
-			std::cout << "Creating layer " << i << std::endl;
 			if(i == 0)
 			{
 				NN_Matrix mat(inputs, nodes);
 				for(int y = 0; y < nodes; y++)
 				{
 					for(int x = 0; x < inputs; x++)
-						mat.setValue(data[offset + x + y * inputs], x, y);
+						mat.setValue(x, y, data[offset + x + y * inputs]);
 				}
 				layers.push_back(mat);
 			}else if(i == hidden_layers - 1)
 			{
 				NN_Matrix mat(nodes, outputs);
-				//std::cout << "Nodes: " << nodes << " Outputs: " << outputs << std::endl;
+
 				for(int y = 0; y < outputs; y++)
 				{
 
 					for(int x = 0; x < nodes; x++)
 					{
-						//std::cout << x << " " << y << std::endl;
-						mat.setValue(data[offset + (i-1) * nodes * nodes + inputs * nodes + x + y * nodes], x, y);
+
+						mat.setValue(x, y, data[offset + (i-1) * nodes * nodes + inputs * nodes + x + y * nodes]);
 					}
 
 				}
@@ -98,7 +97,7 @@ NN NN_FIO::load()
 				for(int y = 0; y < nodes; y++)
 				{
 					for(int x = 0; x < nodes; x++)
-						mat.setValue(data[offset + nodes*inputs + (i-1)*nodes * nodes + x + y * nodes], x, y);
+						mat.setValue(x, y, data[offset + nodes*inputs + (i-1)*nodes * nodes + x + y * nodes]);
 				}
 				layers.push_back(mat);
 			}

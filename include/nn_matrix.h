@@ -33,7 +33,13 @@ public:
 	void addRow(std::vector<float> row);
 	void addColumn(std::vector<float> column);
 
-	void setValue(float const &value, int const &x, int const &y) { m_data[y][x] = value; }
+	void setValue(int const &x, int const &y, float const &value) { m_data[y][x] = value; }
+	void alterValue(int const &x, int const &y, float const &delta) { m_data[y][x] += delta; }
+
+	int getHeight(){ return m_height; }
+	int getWidth(){ return m_width; }
+
+
 
 private:
 	std::vector<std::vector<float>> m_data;
