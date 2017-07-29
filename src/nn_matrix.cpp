@@ -41,9 +41,11 @@ NN_Matrix::NN_Matrix(int _width, int _height, float default_value)
 
 NN_Matrix NN_Matrix::multiply(NN_Matrix const &a) const //needs optimisation
 {
-	if(a.width != height || a.height != width)
+	if(a.width != height)
+	{
+		std::cout << "ERROR MATRIX SIZE MISMATCH WITH SIZES: (" << a.width << ", " << height << ")" << std::endl;
 		return NN_Matrix(0, 0); //do some logging
-
+	}
 	//create matrix for return
 	NN_Matrix matrix(width, a.width, 0);
 
@@ -92,4 +94,10 @@ std::vector<float> NN_Matrix::getRow(int const &r) const
 
 
 	return row;
+}
+
+void NN_Matrix::setColumn(int id, std::vector<float> column)
+{
+	m_data[id] = column;
+	height = column.size();
 }

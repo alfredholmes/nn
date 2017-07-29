@@ -28,7 +28,7 @@ public:
 	void setData(std::vector<std::vector<float>> data) { m_data = data; }
 
 	void setRow(std::vector<float> row, int x);
-	void setColumn(std::vector<float> column, int y);
+	void setColumn(int id, std::vector<float> column);
 
 	void addRow(std::vector<float> row);
 	void addColumn(std::vector<float> column);
