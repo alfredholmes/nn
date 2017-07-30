@@ -2,7 +2,7 @@
 
 #include "math.h"
 #include "nn_matrix.h"
-
+#include <map>
 
 #include <fstream>
 
@@ -26,14 +26,17 @@ public:
 	void selLayer(int layer, NN_Matrix data) { m_layers[layer] = data; }
 
 	void dump();
+	
+	float error(std::vector<float> const &network, std::vector<float> const &output);
 
 private:
 	static inline float activation(float x);
-	static inline std::vector<float> batchActivation(std::vector<float> inoput);
+	static inline std::vector<float> batchActivation(std::vector<float> input);
 	std::vector<NN_Matrix> m_layers;
 	int m_inputs, m_outputs, m_hidden_layers, m_nodes;
 
-	float delta(int j, int layer, std::vector<float> const &outputs, std::vector<float> const &calculated_outputs); //need to be cached
+	float delta(int j, int layer, std::vector<float> const &inputs, std::vector<float> const &outputs);
+	std::map<int, std::map<int, float>> delta_cache;
 
 
 };

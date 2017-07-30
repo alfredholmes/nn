@@ -33,6 +33,8 @@ public:
 	void addRow(std::vector<float> row);
 	void addColumn(std::vector<float> column);
 
+	float getValue(int const &x, int const &y) { return m_data[y][x]; }
+
 	void setValue(int const &x, int const &y, float const &value) { m_data[y][x] = value; }
 	void alterValue(int const &x, int const &y, float const &delta) { m_data[y][x] += delta; }
 

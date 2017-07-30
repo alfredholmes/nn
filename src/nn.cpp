@@ -40,9 +40,9 @@ std::vector<float> NN::batchActivation(std::vector<float> input)
 std::vector<float> NN::calculate(std::vector<float> const &input, int layer)
 {
 	if(layer == -1)
-	{
 		layer = m_layers.size();
-	}
+	if(layer > m_layers.size())
+		layer = m_layers.size();
 	NN_Matrix in(1, m_inputs, 0);
 	in.setColumn(0, input);
 	for(int i = 0; i < layer; i++)
@@ -62,60 +62,82 @@ std::vector<float> NN::calculate(std::vector<float> const &input, int layer)
 //algorithm copied from https://en.wikipedia.org/wiki/Backpropagation#Derivation
 void NN::backpropergation(std::vector<float> const &inputs, std::vector<float> const &outputs)
 {
-	float learning_rate = 0.001;
-	for(int i = m_layers.size() - 1; i >= 0; i--)
+	//std::cout << outputs[0] << std::endl;
+//	std::cout << e << std::endl;
+	float e = error(calculate(inputs), outputs);
+	
+	for(int i = m_hidden_layers; i > 0; i--)
 	{
-		std::vector<float> previous_layer_output = calculate(inputs, i);
-
-		previous_layer_output = NN::batchActivation(previous_layer_output);
-
-		NN_Matrix input(1, previous_layer_output.size());
-		input.setColumn(0, previous_layer_output);
+		//std::cout << i << std::endl;
+		//calculate the vector for o_i
+		std::vector<float> input_vector = calculate(inputs, i);
 		
-		
-		std::vector<float> calculated_outputs = input.multiply(m_layers[i]).getColumn(0);
-		
-		//std::cout << m_layers[i].getData()[0][0] << std::endl;
-
-
-		for(int y = 0; y < m_layers[i].getHeight(); y++)
+		//loop through the rows in the later matrix
+		//the rows of the matrix are the input weights for one of the next nodes
+		for(int x = 0; x < m_layers[i - 1].getWidth(); x++)
 		{
-			for(int x = 0; x < m_layers[i].getWidth(); x++)
+			//loop through the layer inputs, the element in matrix with coords (m, y) is
+			//the weight of the arc connecting the jth element in the inputs to the yth
+			//output
+			for(unsigned m = 0; m < input_vector.size(); m++)
 			{
-				float o = previous_layer_output[x];
-				float d = delta(y, i + 1, outputs, calculated_outputs);
+				float o_i = input_vector[m];
+				float d_j = delta(m, i, inputs, outputs);
 				
-				
-			
-				m_layers[i].alterValue(x, y, -1.0 * learning_rate * o * d);
+				//std::cout << m_layers[i - 1].getValue(x, j) << std::endl;
+				//std::cout << input_vector.size() << " " << m_layers[i -1].getWidth() << " " << m_layers[i -1].getHeight() << std::endl;
+				m_layers[i - 1].alterValue(x, m, -.01 * e * o_i * d_j);
 			}
 		}
+		
 	}
 }
 
-float NN::delta(int j, int layer, std::vector<float> const &outputs, std::vector<float> const &calculated_outputs)
+float NN::delta(int j, int layer, std::vector<float> const &inputs, std::vector<float> const &outputs)
 {
-	
-	if(layer == (int)m_layers.size())
-	{
 
-		return (calculated_outputs[j] - outputs[j]) * calculated_outputs[j] * (1 - calculated_outputs[j]);
-	}else{
-		float total = 0;
-		for(int x = 0; x < m_layers[layer].getHeight(); x++)
-		{
-			
-			NN_Matrix input(1, calculated_outputs.size());
-			input.setColumn(0, calculated_outputs);
-			
-			std::vector<float> next_ouput = input.multiply(m_layers[layer]).getColumn(0);
-			next_ouput = NN::batchActivation(next_ouput);
-			total += delta(x, layer + 1, outputs, next_ouput) * calculated_outputs[j] *  (1 - calculated_outputs[j]);
-			
-		}
-		std::cout << total << std::endl;
-		return total;
+	if(delta_cache.count(layer) == 1)
+	{
+		if(delta_cache[layer].count(j) == 1)
+			return delta_cache[layer][j];
 	}
+	float o_j = calculate(inputs, layer)[j];
+	
+	//easy to compute of neuron is output
+	if(layer == m_hidden_layers)
+	{
+		delta_cache[layer][j] = (o_j - outputs[j]) * o_j * (1 - o_j);
+		return (o_j - outputs[j]) * o_j * (1 - o_j);
+	}
+	//otherwise sum all the deltas multiplied by the weights to calculate this
+	//to do this go through the vertical of the matrix and pick out the jth horizontal element
+	float total = 0;
+	for(int y = 0; y  < m_layers[layer].getHeight(); y++)
+	{
+		float weight = m_layers[layer].getValue(j, y);
+
+		float d = delta(y, layer + 1, inputs, outputs);
+		
+		total += d * weight;
+	}
+	delta_cache[layer][j] = total * o_j * (1 - o_j);
+	return total * o_j * (1 - o_j);
+	
+}
+
+float NN::error(std::vector<float> const &network, std::vector<float> const &output)
+{
+	if(network.size() != output.size())
+	{
+		std::cout << "ERROR CALCULATING ERROR FUNCTION, SIZE MISMATCH" << std::endl;
+		return -1;
+	}
+	float total = 0;
+	for(unsigned i = 0; i < network.size(); i++)
+	{
+		total += pow((network[i] - output[i]), 2);
+	}
+	return total;
 }
 
 
