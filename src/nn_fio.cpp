@@ -41,7 +41,7 @@ NN NN_FIO::load()
 		ss << file;
 
 
-
+	input.close();
 
 	float temp;
 	while(ss >> temp)

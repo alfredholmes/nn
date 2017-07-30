@@ -5,152 +5,72 @@
 void print_matrix(NN_Matrix mat);
 
 float encode(float);
-float decode(float);
-
-void train(int iterations, NN &network);
 
 int main()
 {
+	std::ifstream races;
+	races.open("data/output.csv");
+	std::string line;
 
-	//Create new NN
-	NN_FIO manager("copycat.nn");
-	NN square = manager.load();
-	bool running = true;
-	while(running)
+	NN_FIO manager("predictor.nn");
+	NN predictor(25, 25, 3, 25);
+	int iter = 0;
+	while (std::getline(races, line))
 	{
-		std::cout << "Welcome to the NN interface" << std::endl;
-		std::cout << "---------------------------" << std::endl;
-		std::cout << "What would you like to do?" << std::endl;
-		std::cout << "0) Quit." << std::endl;
-		std::cout << "1) Run a calculation through the network" << std::endl;
-		std::cout << "2) Train the networrk" << std::endl;
-		std::string x;
-		std::cin >> x;
-		int choice = 0;
-		try
-		{
-			choice = std::stoi(x);
-		}
-		catch(...)
-		{
-			std::cout << "Error processing input, please try again" << std::endl;
+		std::cout << iter++ << std::endl;
+		
+		std::stringstream ss;
+		ss << line;
+		
+		std::vector<float> data;
+		float temp;
+		while(ss >> temp)
+			data.push_back(temp);
+
+		int size = data.size();
+	
+	
+		if(size % 2 != 0)
 			continue;
-		}
 		
-		if(choice == 0)
-			running = false;
+		
+		std::vector<float> output;
+		std::vector<float> input;
+		
+		for(int i = 0; i < size / 2; i++)
+			output.push_back(data[i]);
 			
-		if(choice == 1)
+		for(int i = size / 2; i < size; i++)
+			input.push_back(encode(data[i]));
+			
+		for(int i = size / 2; i < 25; i++)
 		{
-			std::cout << "Enter a value between 0 and 1" << std::endl;
-			std::cin >> x;
-			try
-			{
-				float in = std::stof(x);
-				std::cout << "Result from input: " << in << " " << square.calculate({in})[0] << std::endl;
-			}
-			catch(...)
-			{
-				std::cout << "Invalid input" << std::endl;
-				continue;
-			}
+			input.push_back(0);
+			output.push_back(0);
 		}
 		
-		if(choice == 2)
+		predictor.backpropagation(input, output);
+			
+		}
+		races.close();
+		
+		
+		manager.save(predictor);
+		
+		std::vector<float> predictions = predictor.calculate({encode(20), encode(16), encode(9.4), encode(3.7), encode(3.55),encode(13.5), encode(9), encode(7.2), encode(20), 0,0, 0, 0, 0, 0,0, 0, 0, 0, 0,0, 0, 0, 0, 0});
+		for(float prob : predictions)
 		{
-			std::cout << "Enter a the number of iterations" << std::endl;
-			std::cin >> x;
-			try
-			{
-				int in = std::stoi(x);
-				std::cout << "Starting traning with " << in << " iterations" << std::endl;
-				train(in, square);
-				std::cout << "Done" << std::endl;
-
-			}
-			catch(...)
-			{
-				std::cout << "Invalid input" << std::endl;
-				continue;
-			}
+			std::cout << prob  << "\n";
+			
 		}
-
-	/*for(int i = 0; i < 3000; i++)
-	{
-		//std::cout << "Iteration " << i << std::endl;
-		srand(time(NULL) + i);
-		float input = rand()  / (float)RAND_MAX; 
-		//float output = input;
-		
-		//std::cout << output <<std::endl;
-		
-		//std::cout << 1 / output << std::endl;
-		
-		if(i % 1000 == 0)
-			std::cout << i << "th iteration" << std::endl;
-		//std::cout << input << " " << output << std::endl;
-		
-		square.backpropagation({input}, {input});
-		
-		}
-	*/
-	
-	}
-	
-	//square.dump();
-
-
-//	test.dump();
-//	loaded.dump();
-	manager.save(square);
-
-
-	return 0;
-}
-
-void train(int iterations, NN &network)
-{
-	for(int i = 0; i < iterations; i++)
-	{
-		//std::cout << "Iteration " << i << std::endl;
-		srand(time(NULL) + i);
-		float input = rand()  / (float)RAND_MAX; 
-		//float output = input;
-		
-		//std::cout << output <<std::endl;
-		
-		//std::cout << 1 / output << std::endl;
-		
-		if(i % 1000 == 0)
-			std::cout << i << "th iteration" << std::endl;
-		//std::cout << input << " " << output << std::endl;
-		
-		network.backpropagation({input}, {input});
-		
-		}
-}
-
-float encode(float in)
-{
-	
-	return 1.0 / ( 1.0 + exp(-in / 1000));
-}
-
-float decode(float out)
-{
-	return 1000 * log(out / (1.0 - out));
-}
-
-void print_matrix(NN_Matrix mat)
-{
-	std::vector<std::vector<float>> data = mat.getData();
-	for(unsigned y = 0; y < data.size(); y++)
-	{
-		for(unsigned x = 0; x < data[y].size(); x++)
-			std::cout << data[y][x] << " ";
 		std::cout << std::endl;
-	}
-
-	std::cout << std::endl;
-
+		
+		return 0;
+		
 }
+
+float encode(float x)
+{
+	return 1.0f / (1.0f + exp(-x));
+}
+
