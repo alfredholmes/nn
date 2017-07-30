@@ -11,7 +11,7 @@ NN_Matrix::NN_Matrix(int width, int height):
 		std::vector<float> row;
 		for(int x = 0; x < m_width; x++)
 		{
-			row.push_back((float)rand() / (float)RAND_MAX);
+			row.push_back(((float)rand() / (float)RAND_MAX - 0.5f) * 2.0f);
 		}
 		m_data.push_back(row);
 	}

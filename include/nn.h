@@ -14,7 +14,7 @@ public:
 
 	std::vector<float> calculate(std::vector<float> const &input, int layer=-1);
 
-	void backpropergation(std::vector<float> const &inputs, std::vector<float> const &outputs);
+	void backpropagation(std::vector<float> const &inputs, std::vector<float> const &outputs);
 
 
 

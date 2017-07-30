@@ -22,6 +22,7 @@ NN::NN(int inputs, int outputs, int hidden_layers, int nodes_per_layer):
 float NN::activation(float x)
 {
 	return 1.0f / (1.0f + exp(-1.0f * x));
+	//return x;
 }
 
 std::vector<float> NN::batchActivation(std::vector<float> input)
@@ -39,10 +40,14 @@ std::vector<float> NN::batchActivation(std::vector<float> input)
 
 std::vector<float> NN::calculate(std::vector<float> const &input, int layer)
 {
+	
 	if(layer == -1)
 		layer = m_layers.size();
 	if(layer > m_layers.size())
+	{
+		std::cout << "WARN LAYER REQUEST OUT OF RANGE, WILL RETURN FULL NETWORK CALCULATION" << std::endl;
 		layer = m_layers.size();
+	}
 	NN_Matrix in(1, m_inputs, 0);
 	in.setColumn(0, input);
 	for(int i = 0; i < layer; i++)
@@ -60,69 +65,78 @@ std::vector<float> NN::calculate(std::vector<float> const &input, int layer)
 }
 
 //algorithm copied from https://en.wikipedia.org/wiki/Backpropagation#Derivation
-void NN::backpropergation(std::vector<float> const &inputs, std::vector<float> const &outputs)
+void NN::backpropagation(std::vector<float> const &inputs, std::vector<float> const &outputs)
 {
-	//std::cout << outputs[0] << std::endl;
-//	std::cout << e << std::endl;
-	float e = error(calculate(inputs), outputs);
 	
-	for(int i = m_hidden_layers; i > 0; i--)
+	//loop through the network layer by layer backwards
+	//l will be the id of the layer matrix in the m_layers vector
+	for(int l = m_hidden_layers - 1; l >= 0; l--)
 	{
-		//std::cout << i << std::endl;
-		//calculate the vector for o_i
-		std::vector<float> input_vector = calculate(inputs, i);
 		
-		//loop through the rows in the later matrix
-		//the rows of the matrix are the input weights for one of the next nodes
-		for(int x = 0; x < m_layers[i - 1].getWidth(); x++)
+		float err = error(calculate(inputs), outputs); //useful thing to have
+		
+		//get a list of the prevous layer outputs or inputs to this layer
+		std::vector<float> in = calculate(inputs, l); //not l - 1 because l is the less than value in for loop
+		
+		//loop through the layer matrix
+		for(int y = 0; y < m_layers[l].getHeight(); y++)
 		{
-			//loop through the layer inputs, the element in matrix with coords (m, y) is
-			//the weight of the arc connecting the jth element in the inputs to the yth
-			//output
-			for(unsigned m = 0; m < input_vector.size(); m++)
+			for(int x = 0; x < m_layers[l].getWidth(); x++)
 			{
-				float o_i = input_vector[m];
-				float d_j = delta(m, i, inputs, outputs);
+				//We are considering the weight (x, y) in the matrix
+				//this value is the weight from in[x] to out[y]
+				float o_i = in[x];
+				//the delta function is concerned with the next layer
+				float d_j = delta(y, l + 1, inputs, outputs);
 				
-				//std::cout << m_layers[i - 1].getValue(x, j) << std::endl;
-				//std::cout << input_vector.size() << " " << m_layers[i -1].getWidth() << " " << m_layers[i -1].getHeight() << std::endl;
-				m_layers[i - 1].alterValue(x, m, -.01 * e * o_i * d_j);
+				float change = -1 * pow(err, 0.5) * o_i * d_j; 
+			
+				m_layers[l].alterValue(x, y, change);
 			}
 		}
-		
 	}
+	//clean cache
+	delta_cache = {};
 }
 
 float NN::delta(int j, int layer, std::vector<float> const &inputs, std::vector<float> const &outputs)
 {
-
+	
 	if(delta_cache.count(layer) == 1)
 	{
 		if(delta_cache[layer].count(j) == 1)
 			return delta_cache[layer][j];
 	}
-	float o_j = calculate(inputs, layer)[j];
 	
-	//easy to compute of neuron is output
+	std::vector<float> out = calculate(inputs, layer);
+	
+	//if this is the output layer then no recursion required
 	if(layer == m_hidden_layers)
 	{
-		delta_cache[layer][j] = (o_j - outputs[j]) * o_j * (1 - o_j);
-		return (o_j - outputs[j]) * o_j * (1 - o_j);
-	}
-	//otherwise sum all the deltas multiplied by the weights to calculate this
-	//to do this go through the vertical of the matrix and pick out the jth horizontal element
-	float total = 0;
-	for(int y = 0; y  < m_layers[layer].getHeight(); y++)
-	{
-		float weight = m_layers[layer].getValue(j, y);
+		delta_cache[layer][j] = (out[j] - outputs[j]) * out[j] *  (1 - out[j]);
+		return (out[j] - outputs[j]) * out[j] *  (1 - out[j]);
 
-		float d = delta(y, layer + 1, inputs, outputs);
-		
-		total += d * weight;
 	}
-	delta_cache[layer][j] = total * o_j * (1 - o_j);
-	return total * o_j * (1 - o_j);
+	//otherwise do some dank recursion
+	//this is the sum in the wikipedia page
+	//the nuber of outputs connected to this neuron is the height of the matrix
+	float total = 0;
+	for(int l = 0; l < m_layers[layer].getHeight(); l++)
+	{
+		//for each output that the node is connected to we are intrested in
+		//the connecting weight and the delta of that node
+		float weight = m_layers[layer].getValue(j, l); //just from weight matrix
+		//float weight = 0;
+		
+		float d = delta(l, layer + 1, inputs, outputs);
+		
+		total += weight * d;
+		
+	}
 	
+	float r = total * out[j] * (1 - out[j]);
+	delta_cache[layer][j] = r;
+	return r;
 }
 
 float NN::error(std::vector<float> const &network, std::vector<float> const &output)
